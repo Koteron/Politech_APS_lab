@@ -229,17 +229,61 @@ public class Controller
 
             currentTime += 0.001;
         }
+
+        // Evaluating request time characteristics
+        ArrayList<ArrayList<Double>> resultArray = new ArrayList<>();
+        for (int i = 0; i < sources.size(); ++i)
+        {
+            var source = sources.get(i);
+            double overallSystemTime = 0.0;
+            double overallBufferTime = 0.0;
+            double overallProcessingTime = 0.0;
+            double processingTimeDispersion = 0.0;
+            double bufferTimeDispersion = 0.0;
+            resultArray.add(new ArrayList<>());
+            for (var request : processedRequests)
+            {
+                if (request.getSourceNumber() == source.getSourceNumber())
+                {
+                    overallSystemTime += request.getProcessingTime() + request.getBufferTime();
+                    overallBufferTime += request.getBufferTime();
+                    overallProcessingTime += request.getProcessingTime();
+                }
+            }
+            double averageSystemTime = overallSystemTime/source.getAcceptedRequestAmount();
+            double averageBufferTime = overallBufferTime/source.getAcceptedRequestAmount();
+            double averageProcessingTime = overallProcessingTime/source.getAcceptedRequestAmount();
+            resultArray.get(i).add(averageSystemTime);
+            resultArray.get(i).add(averageBufferTime);
+            resultArray.get(i).add(averageProcessingTime);
+            for (var request : processedRequests)
+            {
+                if (request.getSourceNumber() == source.getSourceNumber())
+                {
+                    processingTimeDispersion = (averageProcessingTime - request.getProcessingTime()) *
+                            (averageProcessingTime - request.getProcessingTime());
+                    bufferTimeDispersion = (averageBufferTime - request.getBufferTime()) *
+                            (averageBufferTime - request.getBufferTime());
+                }
+            }
+            resultArray.get(i).add(processingTimeDispersion);
+            resultArray.get(i).add(bufferTimeDispersion);
+        }
+
         System.out.println("Source characteristics:\n");
         System.out.println("SourceNumber RequestAmount RejectionProb AvgTimeInSystem AvgBufferTime AvgProcTime " +
                 "BufferTimeDispersion ProcTimeDispersion");
-        for (var source : sources)
+        for (int i = 0; i < sources.size(); ++i)
         {
+            var source = sources.get(i);
             System.out.println(source.getSourceNumber() + "   " +
                     source.getRequestAmount() + "   " +
                     (double)source.getRejectedRequestAmount() / (double)source.getRequestAmount() + "   " +
-                    source.getSourceNumber() + "   " +
-                    source.getSourceNumber() + "   " +
-                    source.getSourceNumber() + "   " );
+                    resultArray.get(i).get(0) + "   " +
+                    resultArray.get(i).get(1) + "   " +
+                    resultArray.get(i).get(2) + "   " +
+                    resultArray.get(i).get(3) + "   " +
+                    resultArray.get(i).get(4));
         }
     }
 }

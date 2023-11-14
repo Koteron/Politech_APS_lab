@@ -23,6 +23,6 @@ public class Main
         devices.add(new Device(7));
 
         Controller controller = new Controller(sources, 151, dispatchInput, buffer, dispatchOutput);
-        controller.startStepMode();
+        controller.startAutoMode();
     }
 }
