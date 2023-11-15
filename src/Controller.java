@@ -230,7 +230,7 @@ public class Controller
             currentTime += 0.001;
         }
 
-        // Evaluating request time characteristics
+        // Evaluating request time characteristics for each source
         ArrayList<ArrayList<Double>> resultArray = new ArrayList<>();
         for (int i = 0; i < sources.size(); ++i)
         {
@@ -270,6 +270,7 @@ public class Controller
             resultArray.get(i).add(bufferTimeDispersion);
         }
 
+        // Displaying source characteristics
         System.out.println("Source characteristics:\n");
         System.out.println("SourceNumber RequestAmount RejectionProb AvgTimeInSystem AvgBufferTime AvgProcTime " +
                 "BufferTimeDispersion ProcTimeDispersion");
@@ -284,6 +285,15 @@ public class Controller
                     resultArray.get(i).get(2) + "   " +
                     resultArray.get(i).get(3) + "   " +
                     resultArray.get(i).get(4));
+        }
+
+        // Evaluating and displaying device coefficients
+        System.out.println("\n\nDevice usage coefficients:\n");
+        System.out.println("DeviceNumber UsageCoefficient");
+        for (var device : dispatchOutput.getDeviceArray())
+        {
+            System.out.println(device.getDeviceNumber() + "    " +
+                    device.getOverallWorkTime() / currentTime);
         }
     }
 }

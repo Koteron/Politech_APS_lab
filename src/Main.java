@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main
 {
@@ -23,6 +24,33 @@ public class Main
         devices.add(new Device(7));
 
         Controller controller = new Controller(sources, 151, dispatchInput, buffer, dispatchOutput);
-        controller.startAutoMode();
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter 1 to start Step Mode and 2 to start Auto Mode: ");
+        while (true)
+        {
+            try
+            {
+                int input = in.nextInt();
+                if (input == 1)
+                {
+                    controller.startStepMode();
+                    break;
+                }
+                else if (input == 2)
+                {
+                    controller.startAutoMode();
+                    break;
+                }
+                else
+                {
+                    System.out.println("Wrong number was entered!");
+                }
+            }
+            catch (Exception e)
+            {
+                in.nextLine();
+                System.out.println("Not an integer was entered!");
+            }
+        }
     }
 }
