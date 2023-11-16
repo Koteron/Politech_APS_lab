@@ -181,7 +181,7 @@ public class Controller
             // Assigning a Device to process a Request
             if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.isQueueEmpty())
             {
-                Device device = dispatchOutput.assignRequestToDevice(currentTime);
+                dispatchOutput.assignRequestToDevice(currentTime);
             }
 
             // End processing a Request by a Device
