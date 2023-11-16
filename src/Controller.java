@@ -23,11 +23,11 @@ public class Controller
         dispatchInput = dispatchIn;
         buffer = buf;
         dispatchOutput = dispatchOut;
-        processedRequests = new ArrayList<Request>();
-        sourceQueue = new PriorityQueue<Source>(sources.size(), Comparator.comparingDouble(
+        processedRequests = new ArrayList<>();
+        sourceQueue = new PriorityQueue<>(sources.size(), Comparator.comparingDouble(
                 Source::getNextGenerationTime));
         sourceQueue.addAll(soursarr);
-        deviceQueue = new PriorityQueue<Device>(sources.size(), Comparator.comparingDouble(
+        deviceQueue = new PriorityQueue<>(sources.size(), Comparator.comparingDouble(
                 Device::getProcessingEndTime));
         deviceQueue.addAll(dispatchOut.getDeviceArray());
     }

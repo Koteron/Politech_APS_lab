@@ -1,4 +1,3 @@
-import java.util.Random;
 public class Source
 {
     private final double MAX_GENERATION_TIME = 10.0;
