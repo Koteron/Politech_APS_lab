@@ -3,10 +3,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
-// To do:
-// время (done?)
-// вывод календаря и буфера
-
 public class Controller
 {
     private final List<Source> sources;
@@ -88,6 +84,7 @@ public class Controller
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput
+            // source always != null, because queue always has something in it
             Source source = sourceQueue.peek();
             if (currentTime >= source.getNextGenerationTime() && requestAmount > 0)
             {
@@ -132,6 +129,7 @@ public class Controller
             }
 
             // End processing a Request by a Device
+            // device always != null, because queue always has something in it
             if (currentTime >= deviceQueue.peek().getProcessingEndTime())
             {
                 Device device = deviceQueue.poll();
