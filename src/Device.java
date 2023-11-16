@@ -1,7 +1,5 @@
 public class Device
 {
-    private final double MAX_PROCESSING_TIME = 100.0;
-    private final double MIN_PROCESSING_TIME = 50.0;
     private final double TIME_DISTRIBUTION_INTENSITY = 0.05;
     private final int deviceNumber;
     private boolean isRunning = false;
@@ -58,10 +56,6 @@ public class Device
 
     public double getLastEventTime() {
         return lastEventTime;
-    }
-
-    public void setLastEventTime(double lastEventTime) {
-        this.lastEventTime = lastEventTime;
     }
 
     public double getOverallWorkTime() {

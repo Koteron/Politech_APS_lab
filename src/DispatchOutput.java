@@ -3,9 +3,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class DispatchOutput
 {
-    private ArrayBlockingQueue<Request> inputQueue;
-    private Buffer buffer;
-    private ArrayList<Device> deviceArray;
+    private final ArrayBlockingQueue<Request> inputQueue;
+    private final Buffer buffer;
+    private final ArrayList<Device> deviceArray;
     private double sendingTime = 999999.0;
     public DispatchOutput(ArrayList<Device> dev, Buffer buf, int queueSize)
     {
@@ -39,11 +39,11 @@ public class DispatchOutput
         }
         return false;
     }
-    public boolean queueIsFull()
+    public boolean isQueueFull()
     {
         return inputQueue.remainingCapacity() == 0;
     }
-    public boolean queueIsEmpty()
+    public boolean isQueueEmpty()
     {
         return inputQueue.isEmpty();
     }

@@ -22,9 +22,6 @@ public class Buffer
     public void setSendingTime(double newValue) { sendingTime = newValue; }
     public Request getRequest(double currentTime)
     {
-        {
-
-        }
         int sentRequestNumber = 0;
         for (int i = 1; i < bufferSize; ++i)
         {

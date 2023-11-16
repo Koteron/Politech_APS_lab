@@ -1,9 +1,8 @@
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class DispatchInput
 {
-    private final Queue<Request> inputQueue;
+    private final ArrayBlockingQueue<Request> inputQueue;
     private final Buffer buffer;
     private double sendingTime = 999999.0;
     public DispatchInput(Buffer buf, int queueSize)

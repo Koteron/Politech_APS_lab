@@ -1,18 +1,15 @@
 public class Request
 {
-    private final int requestNumber, sourceNumber, userID;
-    private final double generationTime;
+    private final int requestNumber, sourceNumber;
     private double bufferStartTime;
     private double bufferEndTime;
     private double processingStartTime;
     private double processingEndTime;
 
-    public Request(int usrID, int requestNum, int sourceNum, double currentTime)
+    public Request(int requestNum, int sourceNum)
     {
         requestNumber = requestNum;
-        userID = usrID;
         sourceNumber = sourceNum;
-        generationTime = currentTime;
     }
 
     public int getSourceNumber()
@@ -25,11 +22,6 @@ public class Request
         return requestNumber;
     }
 
-    public int getUserID()
-    {
-        return userID;
-    }
-
     public double getBufferTime()
     {
         return bufferEndTime - bufferStartTime;
@@ -39,11 +31,6 @@ public class Request
 
 
     public double getProcessingTime() { return processingEndTime - processingStartTime; }
-
-    public double getGenerationTime()
-    {
-        return generationTime;
-    }
 
     public void setProcessingStartTime(double currentTime)
     {

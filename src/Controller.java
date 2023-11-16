@@ -1,5 +1,3 @@
-import org.javatuples.Quartet;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,8 +13,8 @@ public class Controller
     private int requestAmount;
     private final DispatchInput dispatchInput;
     private final DispatchOutput dispatchOutput;
-    private Buffer buffer;
-    private List<Request> processedRequests;
+    private final Buffer buffer;
+    private final List<Request> processedRequests;
     private double currentTime = 0.0;
     private final PriorityQueue<Source> sourceQueue;
     private final PriorityQueue<Device> deviceQueue;
@@ -36,44 +34,6 @@ public class Controller
         deviceQueue = new PriorityQueue<Device>(sources.size(), Comparator.comparingDouble(
                 Device::getProcessingEndTime));
         deviceQueue.addAll(dispatchOut.getDeviceArray());
-    }
-    public int getOverallRejected()
-    {
-        int sum = 0;
-        for (Source source : sources) {
-            sum += source.getRejectedRequestAmount();
-        }
-        return sum;
-    }
-    public int getOverallAccepted()
-    {
-        int sum = 0;
-        for (Source source : sources) {
-            sum += source.getAcceptedRequestAmount();
-        }
-        return sum;
-    }
-    public int getOverallRequestNumber()
-    {
-        int sum = 0;
-        for (Source source : sources) {
-            sum += source.getRequestAmount();
-        }
-        return sum;
-    }
-    public int getSourceAmount()
-    {
-        return sources.size();
-    }
-    private void pressEnterToContinue()
-    {
-        System.out.println("Press Enter key to continue...");
-        try
-        {
-            System.in.read();
-        }
-        catch(Exception ignored)
-        {}
     }
     public void displayStepStats(String stepEvent)
     {
@@ -115,8 +75,13 @@ public class Controller
                     device.getLastEventTime() + "     " +
                     ((device.isRunning()) ? "Running" : "Waiting"));
         }
-
-        pressEnterToContinue();
+        System.out.println("Press Enter key to continue...");
+        try
+        {
+            System.in.read();
+        }
+        catch(Exception ignored)
+        {}
     }
     public void startStepMode()
     {
@@ -149,7 +114,7 @@ public class Controller
             }
 
             // Sending a Request from Buffer to DispatchOutput
-            if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.queueIsFull())
+            if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.isQueueFull())
             {
                 dispatchOutput.getRequestFromBuffer(currentTime);
                 dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
@@ -157,7 +122,7 @@ public class Controller
             }
 
             // Assigning a Device to process a Request
-            if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.queueIsEmpty())
+            if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.isQueueEmpty())
             {
                 Device device = dispatchOutput.assignRequestToDevice(currentTime);
                 if (device != null)
@@ -207,14 +172,14 @@ public class Controller
             }
 
             // Sending a Request from Buffer to DispatchOutput
-            if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.queueIsFull())
+            if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.isQueueFull())
             {
                 dispatchOutput.getRequestFromBuffer(currentTime);
                 dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
             }
 
             // Assigning a Device to process a Request
-            if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.queueIsEmpty())
+            if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.isQueueEmpty())
             {
                 Device device = dispatchOutput.assignRequestToDevice(currentTime);
             }

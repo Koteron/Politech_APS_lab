@@ -50,8 +50,7 @@ public class Source
         Random rand = new Random();
         if (generatedRequest == null)
         {
-            generatedRequest = new Request(rand.nextInt(0, 99999), getRequestAmount() + 1,
-                    sourceNumber, currentTime);
+            generatedRequest = new Request(getRequestAmount() + 1, sourceNumber);
         }
         if (dispatchInput.queueRequest(generatedRequest))
         {
