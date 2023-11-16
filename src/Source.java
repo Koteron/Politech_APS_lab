@@ -8,7 +8,6 @@ public class Source
     private int requestAmount = 0;
     private double nextGenerationTime = 0.0;
     private final DispatchInput dispatchInput;
-    private Request generatedRequest;
     private double lastGenerationTime = 0.0;
 
     public Source(int sourceNum, DispatchInput dispInput, double currentTime)
@@ -47,14 +46,8 @@ public class Source
     public double getLastGenerationTime() { return lastGenerationTime; }
     public boolean sendRequest(double currentTime)
     {
-        Random rand = new Random();
-        if (generatedRequest == null)
+        if (dispatchInput.queueRequest(new Request(getRequestAmount() + 1, sourceNumber)))
         {
-            generatedRequest = new Request(getRequestAmount() + 1, sourceNumber);
-        }
-        if (dispatchInput.queueRequest(generatedRequest))
-        {
-            generatedRequest = null;
             calculateNextGenerationTime(currentTime);
             lastGenerationTime = currentTime;
             ++requestAmount;
