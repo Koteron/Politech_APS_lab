@@ -15,22 +15,18 @@ public class Source
         sourceNumber = sourceNum;
         dispatchInput = dispInput;
     }
-
     public int getSourceNumber()
     {
         return sourceNumber;
     }
-
     public int getRequestAmount()
     {
         return requestAmount;
     }
-
     public int getAcceptedRequestAmount()
     {
         return requestAmount - rejectedRequestAmount;
     }
-
     public int getRejectedRequestAmount()
     {
         return rejectedRequestAmount;

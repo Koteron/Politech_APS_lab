@@ -7,8 +7,10 @@ public class Main
     private final static int BUFFER_SIZE = 5,
             DISPATCH_INPUT_QUEUE_SIZE = 15,
             DISPATCH_OUTPUT_QUEUE_SIZE = 1,
-            REQUEST_AMOUNT = 151;
-    public static void main(String[] args)
+            SOURCES_AMOUNT = 7,
+            DEVICES_AMOUNT = 14;
+    private static int requestAmount = 151;
+    public static Controller createController()
     {
         ArrayList<Source> sources = new ArrayList<>();
         ArrayList<Device> devices = new ArrayList<>();
@@ -16,31 +18,49 @@ public class Main
         DispatchInput dispatchInput = new DispatchInput(buffer,DISPATCH_INPUT_QUEUE_SIZE);
         DispatchOutput dispatchOutput = new DispatchOutput(devices, buffer, DISPATCH_OUTPUT_QUEUE_SIZE);
 
-        sources.add(new Source(1, dispatchInput, 0.0));
-        sources.add(new Source(2, dispatchInput, 0.0));
-        sources.add(new Source(3, dispatchInput, 0.0));
-        devices.add(new Device(1));
-        devices.add(new Device(2));
-        devices.add(new Device(3));
-        devices.add(new Device(4));
-        devices.add(new Device(5));
-        devices.add(new Device(6));
-        devices.add(new Device(7));
+        for (int i = 1; i <= SOURCES_AMOUNT; ++i)
+        {
+            sources.add(new Source(i, dispatchInput, 0.0));
+        }
+        for(int i = 0; i <= DEVICES_AMOUNT; ++i)
+        {
+            devices.add(new Device(i));
+        }
 
-        Controller controller = new Controller(sources, REQUEST_AMOUNT, dispatchInput, buffer, dispatchOutput);
+        return new Controller(sources, requestAmount, dispatchInput, buffer, dispatchOutput);
+    }
+    public static void main(String[] args)
+    {
+        System.out.println("Evaluating request amount starting from: " + requestAmount);
+        Controller controller = createController();
+        double lastP = controller.startAutoMode();
+        requestAmount = (int)Math.round((1.643*1.643*(1 - lastP))/(lastP*0.01));
+        controller = createController();
+        double nextP = controller.startAutoMode();
+        while (Math.abs(lastP-nextP) >= 0.1 * lastP)
+        {
+            lastP = nextP;
+            requestAmount = (int)Math.round((1.643*1.643*(1 - lastP))/(lastP*0.01));
+            controller = createController();
+            nextP = controller.startAutoMode();
+        }
+        System.out.println("Evaluated request amount: " + requestAmount);
+
         Scanner in = new Scanner(System.in);
         System.out.println("Enter 1 to start Step Mode and 2 to start Auto Mode: ");
+
         while (true)
         {
             String input = in.nextLine();
             if (Objects.equals(input, "1"))
             {
+                controller = createController();
                 controller.startStepMode();
                 break;
             }
             else if (Objects.equals(input, "2"))
             {
-                controller.startAutoMode();
+                controller.displayAutoStats();
                 break;
             }
             else

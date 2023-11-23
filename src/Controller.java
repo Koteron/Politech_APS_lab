@@ -141,7 +141,85 @@ public class Controller
             currentTime += 0.001;
         }
     }
-    public void startAutoMode()
+    public void displayAutoStats()
+    {
+        // Evaluating request time characteristics for each source
+        ArrayList<ArrayList<Double>> resultArray = new ArrayList<>();
+        for (int i = 0; i < sources.size(); ++i)
+        {
+            var source = sources.get(i);
+            double overallSystemTime = 0.0;
+            double overallBufferTime = 0.0;
+            double overallProcessingTime = 0.0;
+            double processingTimeDispersion = 0.0;
+            double bufferTimeDispersion = 0.0;
+            resultArray.add(new ArrayList<>());
+            for (var request : processedRequests)
+            {
+                if (request.getSourceNumber() == source.getSourceNumber())
+                {
+                    overallSystemTime += request.getProcessingTime() + request.getBufferTime();
+                    overallBufferTime += request.getBufferTime();
+                    overallProcessingTime += request.getProcessingTime();
+                }
+            }
+            double averageSystemTime = overallSystemTime/source.getAcceptedRequestAmount();
+            double averageBufferTime = overallBufferTime/source.getAcceptedRequestAmount();
+            double averageProcessingTime = overallProcessingTime/source.getAcceptedRequestAmount();
+            resultArray.get(i).add(averageSystemTime);
+            resultArray.get(i).add(averageBufferTime);
+            resultArray.get(i).add(averageProcessingTime);
+            for (var request : processedRequests)
+            {
+                if (request.getSourceNumber() == source.getSourceNumber())
+                {
+                    processingTimeDispersion = (averageProcessingTime - request.getProcessingTime()) *
+                            (averageProcessingTime - request.getProcessingTime());
+                    bufferTimeDispersion = (averageBufferTime - request.getBufferTime()) *
+                            (averageBufferTime - request.getBufferTime());
+                }
+            }
+            resultArray.get(i).add(processingTimeDispersion);
+            resultArray.get(i).add(bufferTimeDispersion);
+        }
+
+        double overallRejected = 0.0;
+        double overallRequestAmount = 0.0;
+        for (var source : sources)
+        {
+            overallRejected += source.getRejectedRequestAmount();
+            overallRequestAmount += source.getRequestAmount();
+        }
+        System.out.println("Overall rejection probability:" + overallRejected/overallRequestAmount + "\n");
+
+        // Displaying source characteristics
+        System.out.println("Source characteristics:\n");
+        System.out.println("SourceNumber RequestAmount RejectionProb AvgTimeInSystem AvgBufferTime AvgProcTime " +
+                "BufferTimeDispersion ProcTimeDispersion");
+        for (int i = 0; i < sources.size(); ++i)
+        {
+            var source = sources.get(i);
+            System.out.println(source.getSourceNumber() + "   " +
+                    source.getRequestAmount() + "   " +
+                    (double)source.getRejectedRequestAmount() / (double)source.getRequestAmount() + "   " +
+                    resultArray.get(i).get(0) + "   " +
+                    resultArray.get(i).get(1) + "   " +
+                    resultArray.get(i).get(2) + "   " +
+                    resultArray.get(i).get(3) + "   " +
+                    resultArray.get(i).get(4));
+        }
+
+
+        // Evaluating and displaying device coefficients
+        System.out.println("\n\nDevice usage coefficients:\n");
+        System.out.println("DeviceNumber UsageCoefficient");
+        for (var device : dispatchOutput.getDeviceArray())
+        {
+            System.out.println(device.getDeviceNumber() + "    " +
+                    device.getOverallWorkTime() / currentTime);
+        }
+    }
+    public double startAutoMode()
     {
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
@@ -189,74 +267,15 @@ public class Controller
                 processedRequests.add(device.endProcessing(currentTime));
                 deviceQueue.add(device);
             }
-
             currentTime += 0.001;
         }
-
-        // Evaluating request time characteristics for each source
-        ArrayList<ArrayList<Double>> resultArray = new ArrayList<>();
-        for (int i = 0; i < sources.size(); ++i)
+        double overallRejected = 0.0;
+        double overallRequestAmount = 0.0;
+        for (var source : sources)
         {
-            var source = sources.get(i);
-            double overallSystemTime = 0.0;
-            double overallBufferTime = 0.0;
-            double overallProcessingTime = 0.0;
-            double processingTimeDispersion = 0.0;
-            double bufferTimeDispersion = 0.0;
-            resultArray.add(new ArrayList<>());
-            for (var request : processedRequests)
-            {
-                if (request.getSourceNumber() == source.getSourceNumber())
-                {
-                    overallSystemTime += request.getProcessingTime() + request.getBufferTime();
-                    overallBufferTime += request.getBufferTime();
-                    overallProcessingTime += request.getProcessingTime();
-                }
-            }
-            double averageSystemTime = overallSystemTime/source.getAcceptedRequestAmount();
-            double averageBufferTime = overallBufferTime/source.getAcceptedRequestAmount();
-            double averageProcessingTime = overallProcessingTime/source.getAcceptedRequestAmount();
-            resultArray.get(i).add(averageSystemTime);
-            resultArray.get(i).add(averageBufferTime);
-            resultArray.get(i).add(averageProcessingTime);
-            for (var request : processedRequests)
-            {
-                if (request.getSourceNumber() == source.getSourceNumber())
-                {
-                    processingTimeDispersion = (averageProcessingTime - request.getProcessingTime()) *
-                            (averageProcessingTime - request.getProcessingTime());
-                    bufferTimeDispersion = (averageBufferTime - request.getBufferTime()) *
-                            (averageBufferTime - request.getBufferTime());
-                }
-            }
-            resultArray.get(i).add(processingTimeDispersion);
-            resultArray.get(i).add(bufferTimeDispersion);
+            overallRejected += source.getRejectedRequestAmount();
+            overallRequestAmount += source.getRequestAmount();
         }
-
-        // Displaying source characteristics
-        System.out.println("Source characteristics:\n");
-        System.out.println("SourceNumber RequestAmount RejectionProb AvgTimeInSystem AvgBufferTime AvgProcTime " +
-                "BufferTimeDispersion ProcTimeDispersion");
-        for (int i = 0; i < sources.size(); ++i)
-        {
-            var source = sources.get(i);
-            System.out.println(source.getSourceNumber() + "   " +
-                    source.getRequestAmount() + "   " +
-                    (double)source.getRejectedRequestAmount() / (double)source.getRequestAmount() + "   " +
-                    resultArray.get(i).get(0) + "   " +
-                    resultArray.get(i).get(1) + "   " +
-                    resultArray.get(i).get(2) + "   " +
-                    resultArray.get(i).get(3) + "   " +
-                    resultArray.get(i).get(4));
-        }
-
-        // Evaluating and displaying device coefficients
-        System.out.println("\n\nDevice usage coefficients:\n");
-        System.out.println("DeviceNumber UsageCoefficient");
-        for (var device : dispatchOutput.getDeviceArray())
-        {
-            System.out.println(device.getDeviceNumber() + "    " +
-                    device.getOverallWorkTime() / currentTime);
-        }
+        return overallRejected/overallRequestAmount;
     }
 }
