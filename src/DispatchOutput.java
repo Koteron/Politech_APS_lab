@@ -11,7 +11,7 @@ public class DispatchOutput
     {
         buffer = buf;
         deviceArray = dev;
-        inputQueue = new ArrayBlockingQueue<Request>(queueSize);
+        inputQueue = new ArrayBlockingQueue<>(queueSize);
     }
     public ArrayList<Device> getDeviceArray()
     {

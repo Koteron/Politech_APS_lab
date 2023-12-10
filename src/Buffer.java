@@ -12,7 +12,7 @@ public class Buffer
     public Buffer(int bufSize)
     {
         bufferSize = bufSize;
-        requestArray = new ArrayList<Request>();
+        requestArray = new ArrayList<>();
         for (int i = 0; i < bufSize; ++i)
         {
             requestArray.add(null);

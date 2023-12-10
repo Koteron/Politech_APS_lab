@@ -8,7 +8,7 @@ public class DispatchInput
     public DispatchInput(Buffer buf, int queueSize)
     {
         buffer = buf;
-        inputQueue = new ArrayBlockingQueue<Request>(queueSize);
+        inputQueue = new ArrayBlockingQueue<>(queueSize);
     }
     public boolean queueRequest(Request req)
     {

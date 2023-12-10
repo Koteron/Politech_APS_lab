@@ -4,11 +4,15 @@ import java.util.Scanner;
 
 public class Main
 {
-    private final static int BUFFER_SIZE = 5,
+    private final static int BUFFER_SIZE = 2,
             DISPATCH_INPUT_QUEUE_SIZE = 15,
             DISPATCH_OUTPUT_QUEUE_SIZE = 1,
             SOURCES_AMOUNT = 7,
-            DEVICES_AMOUNT = 14;
+            DEVICES_AMOUNT = 5;
+    private static final double START_TIME = 0.0,
+            STUDENT_COEFFICIENT = 1.643,
+            ACCURACY = 0.1,
+            DELTA = 0.1*0.1;
     private static int requestAmount = 151;
     public static Controller createController()
     {
@@ -20,34 +24,36 @@ public class Main
 
         for (int i = 1; i <= SOURCES_AMOUNT; ++i)
         {
-            sources.add(new Source(i, dispatchInput, 0.0));
+            sources.add(new Source(i, dispatchInput, START_TIME));
         }
-        for(int i = 0; i <= DEVICES_AMOUNT; ++i)
+        for(int i = 1; i <= DEVICES_AMOUNT; ++i)
         {
             devices.add(new Device(i));
         }
 
-        return new Controller(sources, requestAmount, dispatchInput, buffer, dispatchOutput);
+        return new Controller(sources, requestAmount, dispatchInput, buffer, dispatchOutput, START_TIME);
     }
     public static void main(String[] args)
     {
         System.out.println("Evaluating request amount starting from: " + requestAmount);
         Controller controller = createController();
         double lastP = controller.startAutoMode();
-        requestAmount = (int)Math.round((1.643*1.643*(1 - lastP))/(lastP*0.01));
+        requestAmount = (int)Math.round((STUDENT_COEFFICIENT*STUDENT_COEFFICIENT*(1 - lastP))/(lastP*DELTA));
         controller = createController();
         double nextP = controller.startAutoMode();
-        while (Math.abs(lastP-nextP) >= 0.1 * lastP)
+        while (Math.abs(lastP-nextP) >= ACCURACY * lastP)
         {
             lastP = nextP;
-            requestAmount = (int)Math.round((1.643*1.643*(1 - lastP))/(lastP*0.01));
+            requestAmount = (int)Math.round((STUDENT_COEFFICIENT*STUDENT_COEFFICIENT*(1 - lastP))/(lastP*DELTA));
             controller = createController();
             nextP = controller.startAutoMode();
         }
-        System.out.println("Evaluated request amount: " + requestAmount);
-
+        System.out.println("Evaluated optimal request amount: " + requestAmount);
         Scanner in = new Scanner(System.in);
-        System.out.println("Enter 1 to start Step Mode and 2 to start Auto Mode: ");
+        System.out.println("Enter:\n" +
+                "1 - to start Step Mode\n" +
+                "2 - to start Auto Mode\n" +
+                "3 - to change request amount manually");
 
         while (true)
         {
@@ -62,6 +68,30 @@ public class Main
             {
                 controller.displayAutoStats();
                 break;
+            }
+            else if (Objects.equals(input, "3"))
+            {
+                while (true)
+                {
+                    System.out.println("Enter new request amount:");
+                    input = in.nextLine();
+                    try
+                    {
+                        requestAmount = Integer.parseInt(input);
+                        System.out.println("Request amount changed to " + requestAmount);
+                        controller = createController();
+                        controller.startAutoMode();
+                        System.out.println("Enter:\n" +
+                                "1 - to start Step Mode\n" +
+                                "2 - to start Auto Mode\n" +
+                                "3 - to change request amount manually");
+                        break;
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        System.out.println("Input is not an integer number!");
+                    }
+                }
             }
             else
             {

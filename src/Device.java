@@ -1,6 +1,6 @@
 public class Device
 {
-    private final double TIME_DISTRIBUTION_INTENSITY = 0.05;
+    private static final double TIME_DISTRIBUTION_INTENSITY = 0.05;
     private final int deviceNumber;
     private boolean isRunning = false;
     private Request processingRequest = null;
@@ -29,7 +29,6 @@ public class Device
 
         double y = Math.random();
         if (y == 0) {y = 0.0000001;}
-        //else if (y == 1) {y = 0.9999999;}
         processingEndTime = currentTime + (-1/TIME_DISTRIBUTION_INTENSITY)*Math.log(y);
 
         lastEventTime = currentTime;

@@ -16,8 +16,9 @@ public class Controller
     private final PriorityQueue<Device> deviceQueue;
     private int stepNumber = 0;
 
-    public Controller(List<Source> soursarr, int reqAmount, DispatchInput dispatchIn, Buffer buf, DispatchOutput dispatchOut)
+    public Controller(List<Source> soursarr, int reqAmount, DispatchInput dispatchIn, Buffer buf, DispatchOutput dispatchOut, double startTime)
     {
+        currentTime = startTime;
         sources = soursarr;
         requestAmount = reqAmount;
         dispatchInput = dispatchIn;
@@ -163,9 +164,15 @@ public class Controller
                     overallProcessingTime += request.getProcessingTime();
                 }
             }
-            double averageSystemTime = overallSystemTime/source.getAcceptedRequestAmount();
-            double averageBufferTime = overallBufferTime/source.getAcceptedRequestAmount();
-            double averageProcessingTime = overallProcessingTime/source.getAcceptedRequestAmount();
+            double averageSystemTime = 0.0;
+            double averageBufferTime = 0.0;
+            double averageProcessingTime = 0.0;
+            if (source.getAcceptedRequestAmount() != 0)
+            {
+                averageSystemTime = overallSystemTime/source.getAcceptedRequestAmount() ;
+                averageBufferTime =  overallBufferTime/source.getAcceptedRequestAmount();
+                averageProcessingTime = overallProcessingTime/source.getAcceptedRequestAmount();
+            }
             resultArray.get(i).add(averageSystemTime);
             resultArray.get(i).add(averageBufferTime);
             resultArray.get(i).add(averageProcessingTime);
