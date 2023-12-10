@@ -5,6 +5,7 @@ public class DispatchInput
     private final ArrayBlockingQueue<Request> inputQueue;
     private final Buffer buffer;
     private double sendingTime = 999999.0;
+    private int lastSentRequest = -1;
     public DispatchInput(Buffer buf, int queueSize)
     {
         buffer = buf;
@@ -28,11 +29,16 @@ public class DispatchInput
     {
         if (inputQueue.peek() != null)
         {
+            lastSentRequest = inputQueue.peek().getRequestNumber();
             return buffer.addRequest(inputQueue.poll(), currentTime);
         }
         else
         {
             return false;
         }
+    }
+    public int getLastSentRequestNumber()
+    {
+        return lastSentRequest;
     }
 }

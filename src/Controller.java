@@ -82,6 +82,7 @@ public class Controller
     }
     public void startStepMode()
     {
+        Request.clearRequestNumber();
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput
@@ -93,7 +94,8 @@ public class Controller
                 source.sendRequest(currentTime);
                 sourceQueue.add(source);
                 dispatchInput.setSendingTime(currentTime + Math.random() / 10);
-                displayStepStats("Generated Request");
+                displayStepStats("Source №" + source.getSourceNumber() +
+                        " Generated Request №" + source.getLastRequestNumber());
             }
 
             // Sending a Request to Buffer
@@ -103,12 +105,13 @@ public class Controller
                 if (!dispatchInput.sendRequestToBuffer(currentTime))
                 {
                     source.increaseRejected();
+                    displayStepStats("Rejected Request №" + dispatchInput.getLastSentRequestNumber());
                 }
                 else
                 {
                     buffer.setSendingTime(currentTime + Math.random() / 10);
+                    displayStepStats("Sent Request №" + dispatchInput.getLastSentRequestNumber() +" To Buffer");
                 }
-                displayStepStats("Sent Request To Buffer");
             }
 
             // Sending a Request from Buffer to DispatchOutput
@@ -116,7 +119,7 @@ public class Controller
             {
                 dispatchOutput.getRequestFromBuffer(currentTime);
                 dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
-                displayStepStats("Sent Request To DispatchOutput");
+                displayStepStats("Sent Request "+ buffer.getLastSentRequestNumber() +" To DispatchOutput");
             }
 
             // Assigning a Device to process a Request
@@ -125,7 +128,8 @@ public class Controller
                 Device device = dispatchOutput.assignRequestToDevice(currentTime);
                 if (device != null)
                 {
-                    displayStepStats("Assigned Request To Device");
+                    displayStepStats("Assigned Request № " + device.getProcessingRequestNumber() +
+                            " To Device №" + device.getDeviceNumber());
                 }
             }
 
@@ -134,9 +138,10 @@ public class Controller
             if (currentTime >= deviceQueue.peek().getProcessingEndTime())
             {
                 Device device = deviceQueue.poll();
+                displayStepStats("Device №"+ device.getDeviceNumber() +
+                        " Is Done Processing Request №" + device.getProcessingRequestNumber());
                 processedRequests.add(device.endProcessing(currentTime));
                 deviceQueue.add(device);
-                displayStepStats("Device Is Done Processing Request");
             }
 
             currentTime += 0.001;
@@ -228,6 +233,7 @@ public class Controller
     }
     public double startAutoMode()
     {
+        Request.clearRequestNumber();
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput

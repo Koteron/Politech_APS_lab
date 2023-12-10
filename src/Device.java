@@ -60,4 +60,6 @@ public class Device
     public double getOverallWorkTime() {
         return overallWorkTime;
     }
+
+    public int getProcessingRequestNumber(){return processingRequest.getRequestNumber();}
 }

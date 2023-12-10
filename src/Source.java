@@ -6,6 +6,7 @@ public class Source
     private int rejectedRequestAmount = 0;
     private int requestAmount = 0;
     private double nextGenerationTime;
+    private int lastRequestNumber = -1;
     private final DispatchInput dispatchInput;
     private double lastGenerationTime = 0.0;
 
@@ -41,17 +42,19 @@ public class Source
     public double getLastGenerationTime() { return lastGenerationTime; }
     public boolean sendRequest(double currentTime)
     {
-        if (dispatchInput.queueRequest(new Request(getRequestAmount() + 1, sourceNumber)))
+        calculateNextGenerationTime(currentTime);
+        Request req = new Request(sourceNumber);
+        lastRequestNumber = req.getRequestNumber();
+        if (dispatchInput.queueRequest(req))
         {
-            calculateNextGenerationTime(currentTime);
             lastGenerationTime = currentTime;
             ++requestAmount;
             return true;
         }
-        else
-        {
-            calculateNextGenerationTime(currentTime);
-            return false;
-        }
+        return false;
+    }
+
+    public int getLastRequestNumber() {
+        return lastRequestNumber;
     }
 }

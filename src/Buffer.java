@@ -8,6 +8,7 @@ public class Buffer
 {
     private final List<Request> requestArray;
     private final int bufferSize;
+    private int lastSentRequestNumber = -1;
     private double sendingTime = 999999.0;
     public Buffer(int bufSize)
     {
@@ -22,20 +23,20 @@ public class Buffer
     public void setSendingTime(double newValue) { sendingTime = newValue; }
     public Request getRequest(double currentTime)
     {
-        int sentRequestNumber = 0;
+        lastSentRequestNumber = 0;
         for (int i = 1; i < bufferSize; ++i)
         {
-            if (requestArray.get(sentRequestNumber) == null
+            if (requestArray.get(lastSentRequestNumber) == null
                 || requestArray.get(i) != null
                 && (requestArray.get(i).getSourceNumber() < requestArray.get(i).getSourceNumber()
                     || requestArray.get(i).getSourceNumber() == requestArray.get(i).getSourceNumber()
                         && requestArray.get(i).getBufferTime() > requestArray.get(i).getBufferTime()))
             {
-                sentRequestNumber = i;
+                lastSentRequestNumber = i;
             }
         }
-        Request req = requestArray.get(sentRequestNumber);
-        requestArray.set(sentRequestNumber, null);
+        Request req = requestArray.get(lastSentRequestNumber);
+        requestArray.set(lastSentRequestNumber, null);
         req.setBufferEndTime(currentTime);
         return req;
     }
@@ -74,6 +75,11 @@ public class Buffer
             }
         }
         return true;
+    }
+
+    public int getLastSentRequestNumber()
+    {
+        return lastSentRequestNumber;
     }
 
     public ArrayList<Quartet<Integer, Double, Integer, Integer>> getState(double currentTime)

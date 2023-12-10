@@ -1,14 +1,15 @@
 public class Request
 {
     private final int requestNumber, sourceNumber;
+    private static int requestNum = 0;
     private double bufferStartTime;
     private double bufferEndTime;
     private double processingStartTime;
     private double processingEndTime;
 
-    public Request(int requestNum, int sourceNum)
+    public Request(int sourceNum)
     {
-        requestNumber = requestNum;
+        requestNumber = requestNum++;
         sourceNumber = sourceNum;
     }
 
@@ -28,7 +29,6 @@ public class Request
     }
 
     public double getInstantBufferTime(double currentTime) { return currentTime - bufferStartTime; }
-
 
     public double getProcessingTime() { return processingEndTime - processingStartTime; }
 
@@ -50,4 +50,5 @@ public class Request
     {
         bufferEndTime = currentTime;
     }
+    public static void clearRequestNumber() {requestNum = 0;}
 }
