@@ -7,27 +7,29 @@ public class Controller
 {
     private final List<Source> sources;
     private int requestAmount;
-    private final DispatchInput dispatchInput;
     private final DispatchOutput dispatchOutput;
     private final Buffer buffer;
     private final List<Request> processedRequests;
     private double currentTime = 0.0;
     private final PriorityQueue<Source> sourceQueue;
+    private final PriorityQueue<Source> sourceSendingQueue;
     private final PriorityQueue<Device> deviceQueue;
     private int stepNumber = 0;
 
-    public Controller(List<Source> soursarr, int reqAmount, DispatchInput dispatchIn, Buffer buf, DispatchOutput dispatchOut, double startTime)
+    public Controller(List<Source> soursarr, int reqAmount, Buffer buf, DispatchOutput dispatchOut, double startTime)
     {
         currentTime = startTime;
         sources = soursarr;
         requestAmount = reqAmount;
-        dispatchInput = dispatchIn;
         buffer = buf;
         dispatchOutput = dispatchOut;
         processedRequests = new ArrayList<>();
         sourceQueue = new PriorityQueue<>(sources.size(), Comparator.comparingDouble(
                 Source::getNextGenerationTime));
         sourceQueue.addAll(soursarr);
+        sourceSendingQueue = new PriorityQueue<>(sources.size(), Comparator.comparingDouble(
+                Source::getSendingTime));
+        sourceSendingQueue.addAll(soursarr);
         deviceQueue = new PriorityQueue<>(sources.size(), Comparator.comparingDouble(
                 Device::getProcessingEndTime));
         deviceQueue.addAll(dispatchOut.getDeviceArray());
@@ -40,12 +42,13 @@ public class Controller
 
         // Display sources state
         System.out.println("Sources:\n");
-        System.out.println("SourceNumber  Time   RequestAmount   RejectedAmount");
+        String format = "| %-15d | %-15f | %-15d | %-15d |%n";
+        System.out.format("| %-15s | %-15s | %-15s | %-15s |%n", "SourceNumber",  "Time",   "RequestAmount",   "RejectedAmount");
         for (Source source : sources)
         {
-            System.out.println(source.getSourceNumber() + "     " +
-                    source.getLastGenerationTime() + "     " +
-                    source.getRequestAmount() + "     " +
+            System.out.format(format, source.getSourceNumber(),
+                    source.getLastGenerationTime(),
+                    source.getRequestAmount(),
                     source.getRejectedRequestAmount());
         }
         System.out.println("\n");
@@ -53,23 +56,35 @@ public class Controller
         // Display buffer state
         var bufferState = buffer.getState(currentTime);
         System.out.println("Buffer:\n");
-        System.out.println("Position  Time   SourceNumber   RequestNumber");
+        System.out.format("| %-15s | %-15s | %-15s | %-15s |%n", "Position",  "Time",   "SourceNumber",   "RequestNumber");
         for (var quartet : bufferState)
         {
-            System.out.println(quartet.getValue0() + "     " +
-                    quartet.getValue1() + "     " +
-                    quartet.getValue2() + "     " +
+            System.out.format(format, quartet.getValue0(),
+                    quartet.getValue1(),
+                    quartet.getValue2(),
                     quartet.getValue3());
+        }
+        System.out.println("\n");
+
+        // Display DispatchOutput
+        if (!dispatchOutput.isQueueEmpty()) {
+            System.out.println("DispatchOutput Next Request To Send: SourceNumber " + dispatchOutput.getNextSendingRequest().getSourceNumber() + " " +
+                    "RequestNumber " + dispatchOutput.getNextSendingRequest().getRequestNumber());
+        }
+        else
+        {
+            System.out.println("DispatchOutput: Empty");
         }
         System.out.println("\n");
 
         // Display devices state
         System.out.println("Devices:\n");
-        System.out.println("DeviceNumber  Time   State");
+        format = "| %-15d | %-15f | %-15s |%n";
+        System.out.format("| %-15s | %-15s | %-15s |%n", "DeviceNumber",  "Time", "State");
         for (var device : dispatchOutput.getDeviceArray())
         {
-            System.out.println(device.getDeviceNumber() + "     " +
-                    device.getLastEventTime() + "     " +
+            System.out.format(format, device.getDeviceNumber(),
+                    device.getLastEventTime(),
                     ((device.isRunning()) ? "Running" : "Waiting"));
         }
         System.out.println("Press Enter key to continue...");
@@ -91,35 +106,38 @@ public class Controller
             if (currentTime >= source.getNextGenerationTime() && requestAmount > 0)
             {
                 sourceQueue.poll();
-                source.sendRequest(currentTime);
+                source.generateRequest(currentTime);
                 sourceQueue.add(source);
-                dispatchInput.setSendingTime(currentTime + Math.random() / 10);
                 displayStepStats("Source №" + source.getSourceNumber() +
                         " Generated Request №" + source.getLastRequestNumber());
+                sourceSendingQueue.poll();
+                sourceSendingQueue.add(source);
             }
 
             // Sending a Request to Buffer
-            if (currentTime >= dispatchInput.getSendingTime() && !dispatchInput.isQueueEmpty())
+            source = sourceSendingQueue.peek();
+            if (currentTime >= source.getSendingTime() && !source.hasRequest())
             {
+                sourceSendingQueue.poll();
+                int reqNum = source.getLastRequestNumber();
                 --requestAmount;
-                if (!dispatchInput.sendRequestToBuffer(currentTime))
+                if (!source.sendRequest(currentTime))
                 {
                     source.increaseRejected();
-                    displayStepStats("Rejected Request №" + dispatchInput.getLastSentRequestNumber());
+                    displayStepStats("Rejected Request №" + reqNum);
                 }
                 else
                 {
-                    buffer.setSendingTime(currentTime + Math.random() / 10);
-                    displayStepStats("Sent Request №" + dispatchInput.getLastSentRequestNumber() +" To Buffer");
+                    displayStepStats("Sent Request №" + reqNum +" To Buffer");
                 }
+                sourceSendingQueue.add(source);
             }
 
             // Sending a Request from Buffer to DispatchOutput
             if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.isQueueFull())
             {
                 dispatchOutput.getRequestFromBuffer(currentTime);
-                dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
-                displayStepStats("Sent Request "+ buffer.getLastSentRequestNumber() +" To DispatchOutput");
+                displayStepStats("Sent Request №"+ buffer.getLastSentRequestNumber() +" To DispatchOutput");
             }
 
             // Assigning a Device to process a Request
@@ -202,32 +220,35 @@ public class Controller
             overallRejected += source.getRejectedRequestAmount();
             overallRequestAmount += source.getRequestAmount();
         }
-        System.out.println("Overall rejection probability:" + overallRejected/overallRequestAmount + "\n");
+        System.out.println("Overall rejection probability: " + overallRejected/overallRequestAmount + "\n");
 
         // Displaying source characteristics
         System.out.println("Source characteristics:\n");
-        System.out.println("SourceNumber RequestAmount RejectionProb AvgTimeInSystem AvgBufferTime AvgProcTime " +
-                "BufferTimeDispersion ProcTimeDispersion");
+        System.out.format("| %-15s | %-15s | %-15s | %-15s | %-15s | %-15s | %-20s | %-20s |%n",
+                "SourceNumber", "RequestAmount", "RejectionProb", "AvgTimeInSystem", "AvgBufferTime", "AvgProcTime",
+                "BufferTimeDispersion", "ProcTimeDispersion");
+        String format = "| %-15d | %-15d | %-15f | %-15f | %-15f | %-15f | %-20f | %-20f |%n";
         for (int i = 0; i < sources.size(); ++i)
         {
             var source = sources.get(i);
-            System.out.println(source.getSourceNumber() + "   " +
-                    source.getRequestAmount() + "   " +
-                    (double)source.getRejectedRequestAmount() / (double)source.getRequestAmount() + "   " +
-                    resultArray.get(i).get(0) + "   " +
-                    resultArray.get(i).get(1) + "   " +
-                    resultArray.get(i).get(2) + "   " +
-                    resultArray.get(i).get(3) + "   " +
+            System.out.format(format, source.getSourceNumber(),
+                    source.getRequestAmount(),
+                    (double)source.getRejectedRequestAmount() / (double)source.getRequestAmount(),
+                    resultArray.get(i).get(0),
+                    resultArray.get(i).get(1),
+                    resultArray.get(i).get(2),
+                    resultArray.get(i).get(3),
                     resultArray.get(i).get(4));
         }
 
 
         // Evaluating and displaying device coefficients
         System.out.println("\n\nDevice usage coefficients:\n");
-        System.out.println("DeviceNumber UsageCoefficient");
+        System.out.format("| %-15s | %-17s |%n", "DeviceNumber", "UsageCoefficient");
+        format = "| %-15d | %-17f |%n";
         for (var device : dispatchOutput.getDeviceArray())
         {
-            System.out.println(device.getDeviceNumber() + "    " +
+            System.out.format(format, device.getDeviceNumber(),
                     device.getOverallWorkTime() / currentTime);
         }
     }
@@ -241,30 +262,30 @@ public class Controller
             if (currentTime >= source.getNextGenerationTime() && requestAmount > 0)
             {
                 sourceQueue.poll();
-                source.sendRequest(currentTime);
+                source.generateRequest(currentTime);
                 sourceQueue.add(source);
-                dispatchInput.setSendingTime(currentTime + Math.random() / 10);
+                sourceSendingQueue.remove(source);
+                sourceSendingQueue.add(source);
             }
 
             // Sending a Request to Buffer
-            if (currentTime >= dispatchInput.getSendingTime() && !dispatchInput.isQueueEmpty())
+            source = sourceSendingQueue.peek();
+            if (currentTime >= source.getSendingTime() && !source.hasRequest())
             {
+                sourceSendingQueue.poll();
                 --requestAmount;
-                if (!dispatchInput.sendRequestToBuffer(currentTime))
+                if (!source.sendRequest(currentTime))
                 {
                     source.increaseRejected();
                 }
-                else
-                {
-                    buffer.setSendingTime(currentTime + Math.random() / 10);
-                }
+                sourceSendingQueue.add(source);
             }
 
             // Sending a Request from Buffer to DispatchOutput
             if (currentTime >= buffer.getSendingTime() && !buffer.isEmpty() && !dispatchOutput.isQueueFull())
             {
                 dispatchOutput.getRequestFromBuffer(currentTime);
-                dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
+                //dispatchOutput.setSendingTime(currentTime + Math.random() / 10);
             }
 
             // Assigning a Device to process a Request

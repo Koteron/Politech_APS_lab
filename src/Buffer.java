@@ -6,6 +6,7 @@ import java.util.List;
 
 public class Buffer
 {
+    private static final double SENDING_TIME_DIVIDER = 10;
     private final List<Request> requestArray;
     private final int bufferSize;
     private int lastSentRequestNumber = -1;
@@ -38,6 +39,7 @@ public class Buffer
         Request req = requestArray.get(lastSentRequestNumber);
         requestArray.set(lastSentRequestNumber, null);
         req.setBufferEndTime(currentTime);
+        sendingTime = 99999.0;
         return req;
     }
 
@@ -47,6 +49,7 @@ public class Buffer
         {
             if (requestArray.get(i) == null)
             {
+                sendingTime = currentTime + Math.random() / SENDING_TIME_DIVIDER;
                 requestArray.set(i, req);
                 req.setBufferStartTime(currentTime);
                 return true;

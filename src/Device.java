@@ -44,7 +44,7 @@ public class Device
     public Request endProcessing(double currentTime)
     {
         isRunning = false;
-        overallWorkTime += currentTime - processingEndTime;
+        overallWorkTime += currentTime - lastEventTime;
         lastEventTime = processingEndTime;
         processingEndTime = 999999.0;
         processingRequest.setProcessingEndTime(currentTime);

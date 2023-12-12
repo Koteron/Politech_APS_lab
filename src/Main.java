@@ -5,7 +5,6 @@ import java.util.Scanner;
 public class Main
 {
     private final static int BUFFER_SIZE = 2,
-            DISPATCH_INPUT_QUEUE_SIZE = 15,
             DISPATCH_OUTPUT_QUEUE_SIZE = 1,
             SOURCES_AMOUNT = 7,
             DEVICES_AMOUNT = 5;
@@ -19,19 +18,18 @@ public class Main
         ArrayList<Source> sources = new ArrayList<>();
         ArrayList<Device> devices = new ArrayList<>();
         Buffer buffer = new Buffer(BUFFER_SIZE);
-        DispatchInput dispatchInput = new DispatchInput(buffer,DISPATCH_INPUT_QUEUE_SIZE);
         DispatchOutput dispatchOutput = new DispatchOutput(devices, buffer, DISPATCH_OUTPUT_QUEUE_SIZE);
 
         for (int i = 1; i <= SOURCES_AMOUNT; ++i)
         {
-            sources.add(new Source(i, dispatchInput, START_TIME));
+            sources.add(new Source(i, buffer, START_TIME));
         }
         for(int i = 1; i <= DEVICES_AMOUNT; ++i)
         {
             devices.add(new Device(i));
         }
 
-        return new Controller(sources, requestAmount, dispatchInput, buffer, dispatchOutput, START_TIME);
+        return new Controller(sources, requestAmount, buffer, dispatchOutput, START_TIME);
     }
     public static void main(String[] args)
     {
