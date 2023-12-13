@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Device
 {
     private static final double TIME_DISTRIBUTION_INTENSITY = 0.03;
@@ -46,7 +48,7 @@ public class Device
     {
         isRunning = false;
         overallWorkTime += currentTime - lastEventTime;
-        lastEventTime = processingEndTime;
+        lastEventTime = currentTime;
         processingEndTime = 999999.0;
         processingRequest.setProcessingEndTime(currentTime);
         Request req = processingRequest;
@@ -62,5 +64,16 @@ public class Device
         return overallWorkTime;
     }
 
-    public int getProcessingRequestNumber(){return processingRequest.getRequestNumber();}
+    public int getProcessingRequestNumber(){
+        if (processingRequest != null ) {
+        return processingRequest.getRequestNumber();
+        }
+        return 0;
+    }
+    public int getProcessingRequestSourceNumber(){
+        if (processingRequest != null ) {
+            return processingRequest.getSourceNumber();
+        }
+        return 0;
+    }
 }

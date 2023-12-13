@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Buffer
 {
-    private static final double SENDING_TIME_DIVIDER = 1000;
+    private static final double SENDING_TIME_DIVIDER = 10000;
     private final List<Request> requestArray;
     private final int bufferSize;
     private int lastSentRequestNumber = -1;

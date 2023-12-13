@@ -6,8 +6,8 @@ public class Main
 {
     private final static int BUFFER_SIZE = 4,
             DISPATCH_OUTPUT_QUEUE_SIZE = 1,
-            SOURCE_AMOUNT = 7,
-            DEVICE_AMOUNT = 5;
+            SOURCE_AMOUNT = 5,
+            DEVICE_AMOUNT = 7;
     private static final double START_TIME = 0.0,
             STUDENT_COEFFICIENT = 1.643,
             ACCURACY = 0.1,

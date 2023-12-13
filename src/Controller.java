@@ -79,13 +79,16 @@ public class Controller
 
         // Display devices state
         System.out.println("Devices:\n");
-        format = "| %-15d | %-15f | %-15s |%n";
-        System.out.format("| %-15s | %-15s | %-15s |%n", "DeviceNumber",  "Time", "State");
+        format = "| %-15d | %-15f | %-15s | %-15d | %-15d |%n";
+        System.out.format("| %-15s | %-15s | %-15s | %-15s | %-15s |%n", "DeviceNumber",  "Time", "State",
+                "SourceNumber", "RequestNumber");
         for (var device : dispatchOutput.getDeviceArray())
         {
             System.out.format(format, device.getDeviceNumber(),
                     device.getLastEventTime(),
-                    ((device.isRunning()) ? "Running" : "Waiting"));
+                    ((device.isRunning()) ? "Running" : "Waiting"),
+                    device.getProcessingRequestSourceNumber(),
+                    device.getProcessingRequestNumber());
         }
         System.out.println("Press Enter key to continue...");
         try
@@ -155,9 +158,10 @@ public class Controller
             if (currentTime >= deviceQueue.peek().getProcessingEndTime())
             {
                 Device device = deviceQueue.poll();
-                displayStepStats("Device №"+ device.getDeviceNumber() +
-                        " Is Done Processing Request №" + device.getProcessingRequestNumber());
+                int processingRequestNumber = device.getProcessingRequestNumber();
                 processedRequests.add(device.endProcessing(currentTime));
+                displayStepStats("Device №"+ device.getDeviceNumber() +
+                        " Is Done Processing Request №" + processingRequestNumber);
                 deviceQueue.add(device);
             }
 
@@ -203,9 +207,9 @@ public class Controller
                 if (request.getSourceNumber() == source.getSourceNumber())
                 {
                     processingTimeDispersion = (averageProcessingTime - request.getProcessingTime()) *
-                            (averageProcessingTime - request.getProcessingTime());
+                            (averageProcessingTime - request.getProcessingTime()) / source.getAcceptedRequestAmount();
                     bufferTimeDispersion = (averageBufferTime - request.getBufferTime()) *
-                            (averageBufferTime - request.getBufferTime());
+                            (averageBufferTime - request.getBufferTime()) / source.getAcceptedRequestAmount();
                 }
             }
             resultArray.get(i).add(processingTimeDispersion);
@@ -253,12 +257,14 @@ public class Controller
     }
     public double startAutoMode()
     {
+        //double time = 0.0;
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput
             Source source = sourceQueue.peek();
             if (currentTime >= source.getNextGenerationTime() && requestAmount > 0)
             {
+                --requestAmount;
                 sourceQueue.poll();
                 source.generateRequest(currentTime);
                 sourceQueue.add(source);
@@ -271,7 +277,6 @@ public class Controller
             if (currentTime >= source.getSendingTime() && !source.hasRequest())
             {
                 sourceSendingQueue.poll();
-                --requestAmount;
                 if (!source.sendRequest(currentTime))
                 {
                     source.increaseRejected();
@@ -289,7 +294,12 @@ public class Controller
             // Assigning a Device to process a Request
             if (currentTime >= dispatchOutput.getSendingTime() && !dispatchOutput.isQueueEmpty())
             {
-                dispatchOutput.assignRequestToDevice(currentTime);
+                Device device = dispatchOutput.assignRequestToDevice(currentTime);
+                if (device != null)
+                {
+                    deviceQueue.remove(device);
+                    deviceQueue.add(device);
+                }
             }
 
             // End processing a Request by a Device
@@ -298,9 +308,19 @@ public class Controller
                 Device device = deviceQueue.poll();
                 processedRequests.add(device.endProcessing(currentTime));
                 deviceQueue.add(device);
+            /*    System.out.println("Device Number: " + device.getDeviceNumber());
+                System.out.println("Overall work time: " + device.getOverallWorkTime());
+                System.out.println("Current time: " + currentTime);
+                System.out.println("Usage Coef: " + device.getOverallWorkTime() / currentTime + "\n");*/
+
             }
+            /*if (requestAmount == 0)
+            {
+                time += 0.001;
+            }*/
             currentTime += 0.001;
         }
+        /*System.out.println(time);*/
         double overallRejected = 0.0;
         double overallRequestAmount = 0.0;
         for (var source : sources)
