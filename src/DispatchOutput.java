@@ -2,10 +2,10 @@ import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class DispatchOutput {
+    private static final double SENDING_TIME_DIVIDER = 1000;
     private final ArrayBlockingQueue<Request> inputQueue;
     private final Buffer buffer;
     private final ArrayList<Device> deviceArray;
-    private static final double SENDING_TIME_DIVIDER = 1000;
     private double sendingTime = 999999.0;
 
     public DispatchOutput(ArrayList<Device> dev, Buffer buf, int queueSize) {

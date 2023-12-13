@@ -97,7 +97,6 @@ public class Controller
     }
     public void startStepMode()
     {
-        Request.clearRequestNumber();
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput
@@ -254,7 +253,6 @@ public class Controller
     }
     public double startAutoMode()
     {
-        Request.clearRequestNumber();
         while (requestAmount > 0 || dispatchOutput.isAnyDeviceRunning())
         {
             // Request generation and sending to DispatchInput
