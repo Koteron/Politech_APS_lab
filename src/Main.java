@@ -4,15 +4,15 @@ import java.util.Scanner;
 
 public class Main
 {
-    private final static int BUFFER_SIZE = 4,
+    private final static int BUFFER_SIZE = 20,
             DISPATCH_OUTPUT_QUEUE_SIZE = 1,
             SOURCE_AMOUNT = 5,
-            DEVICE_AMOUNT = 7;
+            DEVICE_AMOUNT = 10;
     private static final double START_TIME = 0.0,
             STUDENT_COEFFICIENT = 1.643,
             ACCURACY = 0.1,
             DELTA = 0.1*0.1;
-    private static int requestAmount = 151;
+    private static int requestAmount = 3000;
     public static Controller createController()
     {
         ArrayList<Source> sources = new ArrayList<>();

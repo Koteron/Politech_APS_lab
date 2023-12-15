@@ -249,11 +249,14 @@ public class Controller
         System.out.println("\n\nDevice usage coefficients:\n");
         System.out.format("| %-15s | %-17s |%n", "DeviceNumber", "UsageCoefficient");
         format = "| %-15d | %-17f |%n";
+        double sumUsageCoef = 0.0;
         for (var device : dispatchOutput.getDeviceArray())
         {
             System.out.format(format, device.getDeviceNumber(),
-                    device.getOverallWorkTime() / currentTime);
+                    device.getOverallWorkTime() / device.getLastEventTime());
+            sumUsageCoef += device.getOverallWorkTime() / device.getLastEventTime();
         }
+        System.out.println("\nAverage usage coefficient: " + sumUsageCoef / dispatchOutput.getDeviceArray().size());
     }
     public double startAutoMode()
     {
@@ -308,16 +311,7 @@ public class Controller
                 Device device = deviceQueue.poll();
                 processedRequests.add(device.endProcessing(currentTime));
                 deviceQueue.add(device);
-            /*    System.out.println("Device Number: " + device.getDeviceNumber());
-                System.out.println("Overall work time: " + device.getOverallWorkTime());
-                System.out.println("Current time: " + currentTime);
-                System.out.println("Usage Coef: " + device.getOverallWorkTime() / currentTime + "\n");*/
-
             }
-            /*if (requestAmount == 0)
-            {
-                time += 0.001;
-            }*/
             currentTime += 0.001;
         }
         /*System.out.println(time);*/

@@ -2,7 +2,7 @@ import java.util.Objects;
 
 public class Device
 {
-    private static final double TIME_DISTRIBUTION_INTENSITY = 0.03;
+    private static final double TIME_DISTRIBUTION_INTENSITY = 0.018;
     private final int deviceNumber;
     private boolean isRunning = false;
     private Request processingRequest = null;

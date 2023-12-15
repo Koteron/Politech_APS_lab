@@ -1,7 +1,7 @@
 public class Source
 {
-    private static final double MAX_GENERATION_TIME = 10.0;
-    private static final double MIN_GENERATION_TIME = 2.0; // MUST BE GREATER THAN SENDING TIME
+    private static final double MAX_GENERATION_TIME = 40.0;
+    private static final double MIN_GENERATION_TIME = 10.0; // MUST BE GREATER THAN SENDING TIME
     private static final double SENDING_TIME_DIVIDER = 10000;
     private int sourceNumber = -1;
     private int rejectedRequestAmount = 0;
